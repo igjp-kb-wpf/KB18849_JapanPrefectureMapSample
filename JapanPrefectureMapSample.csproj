@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>JapanPrefectureMapSample</AssemblyName>
+    <RootNamespace>JapanPrefectureMapSample</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      製品版(ライセンス済み)パッケージ。Trialサフィックスなし。
+      利用にはInfragisticsのライセンス済みNuGetフィードの登録が必要です。
+      Source: https://packages.infragistics.com/nuget/licensed/v3/index.json
+    -->
+    <PackageReference Include="Infragistics.WPF.Controls.Maps.XamMap" Version="26.1.54" />
+
+    <!--
+      xamMapは新系統(ThemeManager)のコントロールのため、
+      見た目を正しく表示するにはテーマパッケージの適用が必須。
+    -->
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      シェイプファイル(.shp / .shx / .dbf / .prj)を実行ファイルと同じ場所へコピーする。
+      xamMapのShapeFileReaderはファイルパスで読み込むため、実行時にファイルが存在する必要がある。
+    -->
+    <None Update="Shapefiles\**\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

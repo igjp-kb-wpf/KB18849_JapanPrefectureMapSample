@@ -1,0 +1,98 @@
+<Window x:Class="JapanPrefectureMapSample.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ig="http://schemas.infragistics.com/xaml"
+        Title="XamMap - 都道府県別の人口(コロプレス図)"
+        Height="720" Width="1180"
+        Background="White">
+    <Grid Margin="12">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="12" />
+            <ColumnDefinition Width="220" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <DockPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,0,0,8">
+            <TextBlock FontSize="16" FontWeight="SemiBold"
+                       Text="都道府県別の人口(令和2年国勢調査)" />
+        </DockPanel>
+
+        <!--
+            コロプレス図(値の大きさで領域を塗り分ける地図)。
+            地図の形はシェイプファイル、色分けに使う値は自前のデータ(PrefectureData)から取る。
+            両者は「キー」で結びつける: シェイプ側の CODE 列と、データ側の Code プロパティを、
+            どちらも要素の Name として扱い、同じ Name を持つ要素に Population を Value として割り当てる。
+        -->
+        <ig:XamMap x:Name="JapanMap" Grid.Row="1" Grid.Column="0"
+                   ElementHoverAction="Highlight" ElementHover="JapanMap_ElementHover" ElementUnhover="JapanMap_ElementUnhover">
+            <ig:XamMap.Layers>
+                <ig:MapLayer x:Name="PrefectureLayer"
+                             LayerName="prefectureLayer"
+                             FillMode="Choropleth"
+                             DataMapping="Name=Code; Value=Population">
+                    <ig:MapLayer.ToolTip>
+                        <ToolTip x:Name="myToolTip" />
+                    </ig:MapLayer.ToolTip>
+
+
+                    <!-- 値が小さいほど薄く、大きいほど濃い青(左から右へ、低い順) -->
+                    <ig:MapLayer.Brushes>
+                        <ig:BrushCollection>
+                            <SolidColorBrush Color="#FFEFF3FF" />
+                            <SolidColorBrush Color="#FFBDD7E7" />
+                            <SolidColorBrush Color="#FF6BAED6" />
+                            <SolidColorBrush Color="#FF3182BD" />
+                            <SolidColorBrush Color="#FF08519C" />
+                        </ig:BrushCollection>
+                    </ig:MapLayer.Brushes>
+
+                    <!--
+                        人口は東京などに極端に偏っているため、線形ではなく対数スケールで色分けする。
+                        線形だと、ほとんどの県が最も薄い色になってしまう。
+                    -->
+                    <ig:MapLayer.ValueScale>
+                        <ig:LogarithmicScale IsAutoRange="False"
+                                             MinimumValue="500000"
+                                             MaximumValue="15000000" />
+                    </ig:MapLayer.ValueScale>
+                </ig:MapLayer>
+            </ig:XamMap.Layers>
+
+            <!-- 凡例(色と値の対応) -->
+            <ig:MapColorSwatchPane ig:XamDock.Edge="InsideTop"
+                                   Width="360" Height="60" Margin="4"
+                                   LayerName="prefectureLayer"
+                                   DisplayMode="Range" />
+        </ig:XamMap>
+
+        <!-- 右側: 同じデータを人口の多い順に並べた一覧 -->
+        <ListView Grid.Row="1" Grid.Column="2" ItemsSource="{Binding Prefectures}">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="都道府県" Width="80" DisplayMemberBinding="{Binding NameJa}" />
+                    <GridViewColumn Header="人口(人)" Width="100">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock HorizontalAlignment="Right"
+                                           Text="{Binding Population, StringFormat={}{0:N0}}" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                </GridView>
+            </ListView.View>
+        </ListView>
+
+        <!-- 出典・注記 -->
+        <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,8,0,0">
+            <TextBlock Foreground="#FF666666" FontSize="11" TextWrapping="Wrap"
+                       Text="人口: 「令和2年国勢調査 人口等基本集計結果」(総務省統計局)(https://www.stat.go.jp/data/kokusei/2020/kekka.html)を加工して作成(2020年10月1日現在)" />
+            <TextBlock Foreground="#FF666666" FontSize="11" TextWrapping="Wrap" Margin="0,2,0,0"
+                       Text="地図: Made with Natural Earth.(1:10m、日本の47都道府県を抽出して使用)。簡略化された小縮尺のデータのため、公式の行政界とは細部(島の扱い・境界線)が異なります。境界の正確さが求められる用途には使用できません。" />
+        </StackPanel>
+    </Grid>
+</Window>
